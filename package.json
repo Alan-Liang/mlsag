@@ -1,0 +1,31 @@
+{
+  "name": "mlsag",
+  "version": "0.0.1",
+  "description": "JavaScript implementation of the MLSAG algorithm",
+  "main": "src/mlsag.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Alan-Liang/mlsag.git"
+  },
+  "keywords": [
+    "mlsag",
+    "elliptic"
+  ],
+  "author": "Alan-Liang",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/Alan-Liang/mlsag/issues"
+  },
+  "homepage": "https://github.com/Alan-Liang/mlsag#readme",
+  "dependencies": {
+    "bn.js": "^5.1.2",
+    "elliptic": "^6.5.2"
+  },
+  "devDependencies": {
+    "mocha": "^8.0.1",
+    "sha3": "^2.1.2"
+  }
+}
