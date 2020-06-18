@@ -1,10 +1,13 @@
 {
   "name": "mlsag",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "JavaScript implementation of the MLSAG algorithm",
   "main": "src/mlsag.js",
   "scripts": {
     "test": "mocha"
+  },
+  "mocha": {
+    "timeout": 60000
   },
   "repository": {
     "type": "git",
