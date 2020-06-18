@@ -20,7 +20,7 @@ class MLSAG {
   /**
    * Create a MLSAG instance.
    * @param {object} options
-   * @param {string} options.curve curve to use
+   * @param {string} [options.curve='ed25519'] curve to use
    * @param {function} options.hash hash constructor such as `require('sha3').SHA3`, should at least have #update and #digest methods
    * @param {any[]} options.hashOptions options to pass to the hash constructor
    */
@@ -53,6 +53,29 @@ class MLSAG {
   }
 
   /**
+   * Encodes a signature.
+   * @param {SignResult} signature signature to encode
+   * @returns {string}
+   */
+  encodeSignature ({ I, c0, s }) {
+    return I.map(i => i.encode('hex')).join(':') + ',' + c0.toString(16) + ',' + s.map(s => s.map(s => s.toString(16)).join(':')).join(';')
+  }
+
+  /**
+   * Decodes a signature.
+   * @param {string} signature signature to decode
+   * @param {SignResult}
+   */
+  decodeSignature (signature) {
+    if (typeof signature !== 'string') throw new TypeError('Signature must be a string')
+    const [ IString, c0String, sString ] = signature.split(',')
+    const I = IString.split(':').map(i => this._ec.curve.decodePoint(i, 'hex'))
+    const c0 = new BN(c0String, 16)
+    const s = sString.split(';').map(x => x.split(':').map(k => new BN(k, 16)))
+    return { I, c0, s }
+  }
+
+  /**
    * @typedef {object} SignResult
    * @property {Point[]} I key image
    * @property {BN} c0 c_0
@@ -66,9 +89,10 @@ class MLSAG {
    * @param {Point[][]} options.P decoys
    * @param {number} options.pi index of the private key in decoys
    * @param {BN[]} options.x private key
-   * @returns {SignResult}
+   * @param {boolean} [options.encode=false] whether to encode the signature or not
+   * @returns {SignResult|string} string if encode=true
    */
-  sign ({ P, message, pi, x }) {
+  sign ({ P, message, pi, x, encode = false }) {
     const n = P.length, m = P[pi].length
     if (!P.every(x => x.length === m)) throw new TypeError('Invalid public keyring')
     if (!P[pi].every((pk, j) => this._mul(x[j], this._ec.g).eq(pk))) throw new Error('Invalid private key')
@@ -84,19 +108,25 @@ class MLSAG {
     const piMinusOne = (pi + n - 1) % n
     c[pi] = this._hashMessage(message, L[piMinusOne], R[piMinusOne])
     s[pi] = alpha.map((aj, j) => this._sub(aj, this._mul(x[j], c[pi])).umod(this._ec.n))
-    return { I, c0: c[0], s }
+    const signature = { I, c0: c[0], s }
+    if (encode) return this.encodeSignature(signature)
+    return signature
   }
 
   /**
-   * Verifies a signature.
+   * Verifies a signature. Please provide either I, c0 and S, or signature.
    * @param {object} options
    * @param {string|BN} options.message message to sign
    * @param {Point[][]} options.P decoys
-   * @param {Point[]} options.I key image
-   * @param {BN} options.c0 c_0
-   * @param {BN[][]} options.s s
+   * @param {Point[]} [options.I] key image
+   * @param {BN} [options.c0] c_0
+   * @param {BN[][]} [options.s] s
+   * @param {boolean} [options.signature] whether to encode the signature or not
    */
-  verify ({ message, P, I, c0, s }) {
+  verify ({ message, P, I, c0, s, signature }) {
+    if (!(I && c0 && s) && !signature) throw new TypeError('No signature input')
+    if ((I && c0 && s) && signature) throw new TypeError('Duplicate signature input')
+    if (signature) ({ I, c0, s } = this.decodeSignature(signature))
     const n = P.length, m = P[0].length
     if (!P.every(x => x.length === m)) throw new TypeError('Invalid public keyring')
     const c = emptyArray(n)
