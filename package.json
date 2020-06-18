@@ -4,7 +4,7 @@
   "description": "JavaScript implementation of the MLSAG algorithm",
   "main": "src/mlsag.js",
   "scripts": {
-    "test": "mocha"
+    "test": "nyc mocha"
   },
   "mocha": {
     "timeout": 60000
@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "mocha": "^8.0.1",
+    "nyc": "^15.1.0",
     "sha3": "^2.1.2"
   }
 }

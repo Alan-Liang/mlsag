@@ -7,6 +7,7 @@ const BN = require('bn.js')
 
 const emptyArray = length => Array(length).fill(null)
 const zip = (a, b) => {
+  // istanbul ignore if
   if (a.length !== b.length) throw new TypeError('Invalid array length passed to zip()')
   const c = []
   for (let i = 0; i < a.length; i++) {
@@ -94,7 +95,7 @@ class MLSAG {
    */
   sign ({ P, message, pi, x, encode = false }) {
     const n = P.length, m = P[pi].length
-    if (!P.every(x => x.length === m)) throw new TypeError('Invalid public keyring')
+    if (!P.every(x => x.length === m)) throw new TypeError('Invalid decoys')
     if (!P[pi].every((pk, j) => this._mul(x[j], this._ec.g).eq(pk))) throw new Error('Invalid private key')
     const I = P[pi].map((_, j) => this._mul(x[j], this._hashPoint(P[pi][j])))
     const s = this._randomMatrix(n, m)
@@ -128,7 +129,7 @@ class MLSAG {
     if ((I && c0 && s) && signature) throw new TypeError('Duplicate signature input')
     if (signature) ({ I, c0, s } = this.decodeSignature(signature))
     const n = P.length, m = P[0].length
-    if (!P.every(x => x.length === m)) throw new TypeError('Invalid public keyring')
+    if (!P.every(x => x.length === m)) throw new TypeError('Invalid decoys')
     const c = emptyArray(n)
     c[0] = c0
     const L = emptyArray(n), R = emptyArray(n)
